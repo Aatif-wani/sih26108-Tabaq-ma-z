@@ -1,0 +1,16 @@
+query,expected_standard_id,difficulty,notes
+cement for building construction,IS 269:2015,easy,exact-topic match
+steel bars for reinforced concrete,IS 1786:2008,easy,exact-topic match
+drinking water quality specification,IS 10500:2012,easy,exact-topic match
+safety requirements for household electrical appliances,IS 302 (Part 1):2024,easy,exact-topic match
+LED lamp safety for general lighting,IS 16102 (Part 1):2012,easy,exact-topic match
+plastic pipes for supplying potable water,IS 4985:2021,medium,paraphrase - UPVC not named directly
+safety shoes for factory workers,IS 15298 (Part 2):2024,medium,paraphrase - "safety footwear" vs "safety shoes"
+code of practice for RCC structural design,IS 456:2000,medium,paraphrase + abbreviation (RCC)
+laptop and server electrical safety,IS 13252 (Part 1):2010,medium,paraphrase of "IT equipment"
+salt for food use,IS 7224:2006,medium,short/vague query
+quality sampling plan for incoming inspection,IS 2500 (Part 1):2000,hard,generic QC phrasing, 2 similar standards exist (IS 2500 vs IS 4905)
+random number generation for statistical sampling,IS 4905:2015,hard,generic QC phrasing, overlaps with IS 2500
+bottles for packaged mineral water,IS 15410:2003,hard,paraphrase of "containers for packaging"
+motors and generators specification,IS 4722:2001,hard,paraphrase - "rotating electrical machines" not named
+smartphone battery safety standard,,hard,expected: no confident match (not in this 22-row sample)
