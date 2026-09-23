@@ -77,6 +77,6 @@ python retrieve.py "your query here"
 
 - ✅ Data collection — sample batch done (Ilha + Basit)
 - ✅ AI engine — working prototype, tested locally (Babar / Aatif)
-- ⬜ Backend — not started
-- ⬜ Frontend — not started
+- ✅ Backend — Flask API completed and verified (Muhaimin)
+- ⬜ Frontend — not started (Dayan)
 - ⬜ Full integration + demo — not started

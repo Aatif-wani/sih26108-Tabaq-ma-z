@@ -59,14 +59,18 @@ class StandardsRetriever:
             if idx == -1:
                 continue
             row = self.metadata.iloc[idx]
+            year_val = row["year"]
+            if hasattr(year_val, "item"):
+                year_val = year_val.item()
+
             results.append({
-                "standard_id": row["standard_id"],
-                "title": row["title"],
-                "category": row["category"],
-                "department": row["department"],
-                "official_url": row["official_url"],
-                "status": row["status"],
-                "year": row["year"],
+                "standard_id": str(row["standard_id"]),
+                "title": str(row["title"]),
+                "category": str(row["category"]),
+                "department": str(row["department"]),
+                "official_url": str(row["official_url"]),
+                "status": str(row["status"]),
+                "year": year_val,
                 "similarity_score": round(float(score), 4),
             })
         return results
