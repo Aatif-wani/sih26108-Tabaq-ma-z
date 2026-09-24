@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IS Standards Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --ink: #17233a;
+    --ink-2: #4a566b;
+    --ink-3: #7b8699;
+    --line: #d9dfe7;
+    --accent: #0d6b4f;
+    --accent-ink: #ffffff;
+    --accent-soft: #dcefe7;
+    --warn: #8a5a00;
+    --warn-soft: #fbefd2;
+    --bad: #a4262c;
+    --bad-soft: #fbe3e4;
+    --focus: #1a5fd0;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  :root:not([data-theme="light"]) {
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #10161f;
+      --surface: #182130;
+      --ink: #e8edf5;
+      --ink-2: #b1bccd;
+      --ink-3: #8592a8;
+      --line: #2a3648;
+      --accent: #4cc59a;
+      --accent-ink: #08261c;
+      --accent-soft: #163a2f;
+      --warn: #f0c060;
+      --warn-soft: #3a2f12;
+      --bad: #ff8a8f;
+      --bad-soft: #3b1a1d;
+      --focus: #7aa8ff;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  a { color: inherit; }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  /* Header */
+  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+  .sub { margin: 10px 0 0; color: var(--ink-2); max-width: 56ch; }
+
+  .status {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); font-size: 0.85rem; color: var(--ink-2);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); }
+  .status[data-state="ok"] .dot { background: var(--accent); }
+  .status[data-state="down"] .dot { background: var(--bad); }
+
+  /* Search */
+  form.search { margin-top: 28px; }
+  .field {
+    display: flex; gap: 8px; padding: 8px;
+    background: var(--surface); border: 1.5px solid var(--ink);
+    border-radius: 14px;
+  }
+  .field:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .field input[type="search"] {
+    flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink);
+    font: inherit; font-size: 1.1rem; padding: 10px 12px; outline: none;
+  }
+  .field input::placeholder { color: var(--ink-3); }
+  .go {
+    background: var(--accent); color: var(--accent-ink); border: 0;
+    border-radius: 9px; padding: 0 22px; font-weight: 600; min-height: 46px;
+  }
+  .go:disabled { opacity: 0.6; cursor: progress; }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 14px; font-size: 0.9rem; color: var(--ink-2); }
+  .controls label { display: inline-flex; align-items: center; gap: 8px; }
+  select, .controls input[type="text"] {
+    font: inherit; font-size: 0.9rem; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
+  }
+  .linkbtn { background: none; border: 0; padding: 0; text-decoration: underline; color: var(--ink-2); font-size: 0.9rem; }
+  #apiRow { display: none; width: 100%; }
+  #apiRow.open { display: flex; }
+  #apiRow input { flex: 1; min-width: 0; }
+
+  .chips { margin-top: 18px; }
+  .chips-title { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 8px; }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+    border-radius: 999px; padding: 6px 13px; font-size: 0.9rem;
+  }
+  .chip:hover { border-color: var(--ink-2); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Result area */
+  #out { margin-top: 32px; }
+  .summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+  .summary h2 { font-family: var(--serif); font-weight: 500; font-size: 1.35rem; margin: 0; }
+  .summary p { margin: 0; color: var(--ink-3); font-size: 0.9rem; }
+
+  .notice { border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 0.95rem; }
+  .notice strong { display: block; margin-bottom: 2px; }
+  .notice.warn { background: var(--warn-soft); color: var(--warn); }
+  .notice.bad { background: var(--bad-soft); color: var(--bad); }
+  .notice.bad code { font-family: var(--mono); font-size: 0.85em; }
+
+  .filters { margin-bottom: 14px; }
+
+  ol.results { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .res {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 20px; display: grid; grid-template-columns: 1fr auto; gap: 6px 20px;
+  }
+  .res.top { border: 1.5px solid var(--accent); }
+  .res .id { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+  .res.top .id { font-size: 1.75rem; }
+  .res .rank { font-family: var(--sans); font-size: 0.8rem; font-weight: 600; color: var(--ink-3); margin-right: 8px; letter-spacing: 0; }
+  .res .title { grid-column: 1 / -1; margin: 2px 0 6px; color: var(--ink); font-size: 1rem; max-width: 70ch; }
+  .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 0.85rem; color: var(--ink-2); }
+  .tag { border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
+  .tag.st-active { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 600; }
+  .tag.st-rev { background: var(--warn-soft); color: var(--warn); border-color: transparent; font-weight: 600; }
+  .dept { grid-column: 1 / -1; color: var(--ink-3); font-size: 0.85rem; }
+
+  .score { text-align: right; min-width: 92px; }
+  .score b { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .score span { display: block; font-size: 0.75rem; color: var(--ink-3); }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .low .bar i { background: var(--ink-3); }
+
+  .actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .btn {
+    border: 1px solid var(--line); background: transparent; border-radius: 8px;
+    padding: 7px 14px; font-size: 0.9rem; font-weight: 500; text-decoration: none; display: inline-block;
+  }
+  .btn:hover { border-color: var(--ink-2); }
+  .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Loading */
+  .skel { height: 132px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .skel::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 7%, transparent), transparent);
+    transform: translateX(-100%); animation: sweep 1.3s infinite;
+  }
+  @keyframes sweep { to { transform: translateX(100%); } }
+
+  .empty { color: var(--ink-2); padding: 28px 4px; }
+  .empty h2 { font-family: var(--serif); font-weight: 500; font-size: 1.35rem; margin: 0 0 6px; color: var(--ink); }
+
+  .history { margin-top: 26px; }
+  footer { margin-top: 48px; color: var(--ink-3); font-size: 0.85rem; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px;
+    font-size: 0.9rem; opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 560px) {
+    header { flex-direction: column; }
+    .res { grid-template-columns: 1fr; }
+    .score { text-align: left; }
+    .go { padding: 0 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skel::after { animation: none; }
+    .toast { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Find the Indian Standard<br>for your product</h1>
+      <p class="sub">Describe what you make or test in plain words. You get the closest matching BIS standards, ranked.</p>
+    </div>
+    <div class="status" id="status" data-state="unknown" role="status" aria-live="polite">
+      <span class="dot"></span><span id="statusText">Checking backend</span>
+    </div>
+  </header>
+
+  <form class="search" id="form" role="search">
+    <div class="field">
+      <input type="search" id="q" placeholder="e.g. safety shoes for factory workers" aria-label="Describe the product or topic" autocomplete="off" maxlength="300">
+      <button class="go" id="go" type="submit">Search</button>
+    </div>
+    <div class="controls">
+      <label>Results
+        <select id="topk" aria-label="Number of results">
+          <option value="3">3</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+      </label>
+      <button type="button" class="linkbtn" id="apiToggle" aria-expanded="false" aria-controls="apiRow">Backend address</button>
+      <div id="apiRow" class="controls" style="margin:0">
+        <input type="text" id="api" aria-label="Backend address" placeholder="http://localhost:5000" spellcheck="false">
+      </div>
+    </div>
+  </form>
+
+  <div class="chips">
+    <div class="chips-title">Try one of these</div>
+    <div class="chip-list" id="examples"></div>
+  </div>
+
+  <section id="out" aria-live="polite">
+    <div class="empty">
+      <h2>Start with a few words</h2>
+      <p>Product names, materials, or what the standard should cover all work. Paraphrases are fine: "safety shoes" finds safety footwear.</p>
+    </div>
+  </section>
+
+  <div class="history" id="historyBox" hidden>
+    <div class="chips-title">Recent searches</div>
+    <div class="chip-list" id="history"></div>
+  </div>
+
+  <footer>Results come from a semantic search over a sample of BIS standards. Always confirm the current edition on the official BIS site before relying on a standard.</footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DEFAULT_API = "http://localhost:5000";
+  var FALLBACK_THRESHOLD = 0.40; // used only if backend doesn't send confident_match
+  var EXAMPLES = [
+    "cement for building construction",
+    "safety shoes for factory workers",
+    "plastic pipes for supplying potable water",
+    "motors and generators specification",
+    "salt for food use",
+    "laptop and server electrical safety"
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {
+    form: $("form"), q: $("q"), go: $("go"), topk: $("topk"), out: $("out"),
+    status: $("status"), statusText: $("statusText"), api: $("api"),
+    apiRow: $("apiRow"), apiToggle: $("apiToggle"), examples: $("examples"),
+    history: $("history"), historyBox: $("historyBox"), toast: $("toast")
+  };
+
+  var current = null;      // AbortController of in-flight search
+  var lastData = null;     // last successful response
+  var activeCat = "All";
+
+  /* ---------- storage (safe) ---------- */
+  function store(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+  function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  function apiBase() {
+    var v = (els.api.value || "").trim().replace(/\/+$/, "");
+    return v || DEFAULT_API;
+  }
+
+  /* ---------- tiny DOM helper ---------- */
+  function h(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+
+  function toast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.add("show");
+    clearTimeout(toast.t);
+    toast.t = setTimeout(function () { els.toast.classList.remove("show"); }, 1800);
+  }
+
+  /* ---------- backend health ---------- */
+  function checkHealth() {
+    els.status.dataset.state = "unknown";
+    els.statusText.textContent = "Checking backend";
+    var ctl = new AbortController();
+    var timer = setTimeout(function () { ctl.abort(); }, 4000);
+    fetch(apiBase() + "/health", { signal: ctl.signal })
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function () {
+        els.status.dataset.state = "ok";
+        els.statusText.textContent = "Backend connected";
+      })
+      .catch(function () {
+        els.status.dataset.state = "down";
+        els.statusText.textContent = "Backend offline";
+      })
+      .then(function () { clearTimeout(timer); });
+  }
+
+  /* ---------- search ---------- */
+  function runSearch(query) {
+    query = (query || "").trim();
+    if (!query) { els.q.focus(); return; }
+
+    els.q.value = query;
+    if (current) current.abort();
+    current = new AbortController();
+    var ctl = current;
+
+    els.go.disabled = true;
+    els.go.textContent = "Searching";
+    showSkeleton();
+
+    var body = JSON.stringify({ query: query, top_k: parseInt(els.topk.value, 10) || 5 });
+
+    fetch(apiBase() + "/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: body,
+      signal: ctl.signal
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok) {
+            var err = new Error(data.error || ("Server returned status " + r.status));
+            err.server = true;
+            throw err;
+          }
+          return data;
+        });
+      })
+      .then(function (data) {
+        if (ctl !== current) return;
+        lastData = data;
+        activeCat = "All";
+        els.status.dataset.state = "ok";
+        els.statusText.textContent = "Backend connected";
+        addHistory(query);
+        render();
+      })
+      .catch(function (err) {
+        if (err.name === "AbortError") return;
+        showError(err);
+      })
+      .then(function () {
+        if (ctl === current) {
+          els.go.disabled = false;
+          els.go.textContent = "Search";
+        }
+      });
+  }
+
+  function showSkeleton() {
+    clear(els.out);
+    for (var i = 0; i < 3; i++) els.out.appendChild(h("div", { class: "skel", style: "margin-bottom:12px" }));
+  }
+
+  function showError(err) {
+    clear(els.out);
+    var box = h("div", { class: "notice bad" });
+    if (err.server) {
+      box.appendChild(h("strong", { text: "The search failed" }));
+      box.appendChild(document.createTextNode(err.message + " Try again, or check the backend terminal for the error."));
+    } else {
+      els.status.dataset.state = "down";
+      els.statusText.textContent = "Backend offline";
+      box.appendChild(h("strong", { text: "Can't reach the backend" }));
+      var p = h("span");
+      p.appendChild(document.createTextNode("Start it with "));
+      p.appendChild(h("code", { text: "python app.py" }));
+      p.appendChild(document.createTextNode(" in the backend folder, wait for \u201cRetriever ready\u201d, then search again. Trying: "));
+      p.appendChild(h("code", { text: apiBase() }));
+      box.appendChild(p);
+    }
+    els.out.appendChild(box);
+    els.out.appendChild(h("button", { class: "btn", type: "button", text: "Try again", onclick: function () { runSearch(els.q.value); } }));
+  }
+
+  /* ---------- rendering ---------- */
+  function isConfident(data) {
+    if (typeof data.confident_match === "boolean") return data.confident_match;
+    var r = data.results && data.results[0];
+    return !!r && r.similarity_score >= FALLBACK_THRESHOLD;
+  }
+
+  function safeUrl(u) {
+    try {
+      var x = new URL(u);
+      return (x.protocol === "http:" || x.protocol === "https:") ? x.href : null;
+    } catch (e) { return null; }
+  }
+
+  function statusClass(s) {
+    s = (s || "").toLowerCase();
+    if (s.indexOf("revision") > -1) return "tag st-rev";
+    if (s.indexOf("active") > -1) return "tag st-active";
+    return "tag";
+  }
+
+  function render() {
+    var data = lastData;
+    clear(els.out);
+    if (!data) return;
+    var results = data.results || [];
+
+    if (!results.length) {
+      els.out.appendChild(h("div", { class: "empty" }, [
+        h("h2", { text: "No standards found" }),
+        h("p", { text: "Try describing the product or its use in different words." })
+      ]));
+      return;
+    }
+
+    var confident = isConfident(data);
+
+    els.out.appendChild(h("div", { class: "summary" }, [
+      h("h2", { text: "Results for \u201c" + data.query + "\u201d" }),
+      h("p", { text: results.length + (results.length === 1 ? " standard" : " standards") })
+    ]));
+
+    if (!confident) {
+      els.out.appendChild(h("div", { class: "notice warn", role: "note" }, [
+        h("strong", { text: "No confident match" }),
+        "The closest standards are shown below, but none is a strong fit. The topic may not be in the dataset, so check the titles before using any of them."
+      ]));
+    }
+
+    // category filter
+    var cats = [];
+    results.forEach(function (r) { if (r.category && cats.indexOf(r.category) < 0) cats.push(r.category); });
+    if (cats.length > 1) {
+      var fl = h("div", { class: "filters chip-list", role: "group", "aria-label": "Filter by category" });
+      ["All"].concat(cats).forEach(function (c) {
+        fl.appendChild(h("button", {
+          class: "chip", type: "button", text: c,
+          "aria-pressed": String(c === activeCat),
+          onclick: function () { activeCat = c; render(); }
+        }));
+      });
+      els.out.appendChild(fl);
+    }
+
+    var list = h("ol", { class: "results" });
+    var shown = results.filter(function (r) { return activeCat === "All" || r.category === activeCat; });
+
+    shown.forEach(function (r, i) {
+      var pct = Math.max(0, Math.min(100, Math.round((r.similarity_score || 0) * 100)));
+      var isTop = r.rank === 1 && confident;
+      var low = r.confident === false;
+      var cls = "res" + (isTop ? " top" : "") + (low ? " low" : "");
+
+      var url = safeUrl(r.official_url);
+      var actions = h("div", { class: "actions" });
+      if (url) actions.appendChild(h("a", { class: "btn primary", href: url, target: "_blank", rel: "noopener noreferrer", text: "Open official document" }));
+      actions.appendChild(h("button", {
+        class: "btn", type: "button", text: "Copy standard number",
+        onclick: function () {
+          var done = function () { toast("Copied " + r.standard_id); };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(r.standard_id).then(done, function () { toast("Copy failed"); });
+          } else { toast("Copy not supported here"); }
+        }
+      }));
+
+      var meta = h("div", { class: "meta" });
+      if (r.status) meta.appendChild(h("span", { class: statusClass(r.status), text: r.status }));
+      if (r.year) meta.appendChild(h("span", { class: "tag", text: "Year " + r.year }));
+      if (r.category) meta.appendChild(h("span", { class: "tag", text: r.category }));
+
+      var li = h("li", { class: cls }, [
+        h("div", { class: "id" }, [h("span", { class: "rank", text: "#" + r.rank }), r.standard_id]),
+        h("div", { class: "score", "aria-label": "Match score " + pct + " percent" }, [
+          h("b", { text: pct + "%" }),
+          h("span", { text: "match" }),
+          h("div", { class: "bar" }, [h("i", { style: "width:" + pct + "%" })])
+        ]),
+        h("p", { class: "title", text: r.title }),
+        meta,
+        r.department ? h("div", { class: "dept", text: r.department }) : null,
+        actions
+      ]);
+      list.appendChild(li);
+    });
+    els.out.appendChild(list);
+  }
+
+  /* ---------- history ---------- */
+  function getHistory() {
+    try { return JSON.parse(load("is_history") || "[]"); } catch (e) { return []; }
+  }
+  function addHistory(q) {
+    var hst = getHistory().filter(function (x) { return x.toLowerCase() !== q.toLowerCase(); });
+    hst.unshift(q);
+    store("is_history", JSON.stringify(hst.slice(0, 6)));
+    renderHistory();
+  }
+  function renderHistory() {
+    var hst = getHistory();
+    clear(els.history);
+    els.historyBox.hidden = !hst.length;
+    hst.forEach(function (q) {
+      els.history.appendChild(h("button", { class: "chip", type: "button", text: q, onclick: function () { runSearch(q); } }));
+    });
+  }
+
+  /* ---------- wire up ---------- */
+  EXAMPLES.forEach(function (q) {
+    els.examples.appendChild(h("button", { class: "chip", type: "button", text: q, onclick: function () { runSearch(q); } }));
+  });
+
+  els.form.addEventListener("submit", function (e) { e.preventDefault(); runSearch(els.q.value); });
+
+  els.apiToggle.addEventListener("click", function () {
+    var open = els.apiRow.classList.toggle("open");
+    els.apiToggle.setAttribute("aria-expanded", String(open));
+    if (open) els.api.focus();
+  });
+  els.api.addEventListener("change", function () {
+    store("is_api", els.api.value.trim());
+    checkHealth();
+  });
+
+  els.api.value = load("is_api") || DEFAULT_API;
+  renderHistory();
+  checkHealth();
+  els.q.focus();
+})();
+</script>
+</body>
+</html>

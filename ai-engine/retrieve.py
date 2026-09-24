@@ -1,37 +1,45 @@
 """
 Track 2 - Step C: Query-time retrieval module.
 
-This is the piece Muhaimin's Flask backend imports directly - it should
-NOT duplicate this logic inside a route. Loads the model + FAISS index +
-metadata once, then answers search(query, top_k) calls cheaply.
-
-Usage (standalone test):
-    python retrieve.py "cement for building construction"
-
-Usage (as a module, e.g. from Flask):
+Flask backend usage:
     from retrieve import StandardsRetriever
-    retriever = StandardsRetriever()
+    retriever = StandardsRetriever()          # load once at startup
     results = retriever.search("cement for building construction", top_k=5)
+
+Standalone test:
+    python retrieve.py "cement for building construction"
 """
 
 import sys
-import pandas as pd
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import faiss
 from sentence_transformers import SentenceTransformer
 
+# Paths are relative to THIS file, so it works no matter which folder
+# you start Flask or Python from.
+BASE_DIR = Path(__file__).resolve().parent
+
 MODEL_NAME = "all-MiniLM-L6-v2"
-INDEX_PATH = "standards.index"
-METADATA_PATH = "standards_metadata.csv"
+INDEX_PATH = BASE_DIR / "standards.index"
+METADATA_PATH = BASE_DIR / "standards_metadata.csv"
+
+# Results scoring below this are flagged as "not confident".
+# Tune it after checking real scores (correct matches vs. no-match queries).
+MIN_SCORE = 0.40
 
 
 class StandardsRetriever:
     def __init__(self,
                  model_name: str = MODEL_NAME,
-                 index_path: str = INDEX_PATH,
-                 metadata_path: str = METADATA_PATH):
+                 index_path=INDEX_PATH,
+                 metadata_path=METADATA_PATH,
+                 min_score: float = MIN_SCORE):
+        self.min_score = min_score
         self.model = SentenceTransformer(model_name)
-        self.index = faiss.read_index(index_path)
+        self.index = faiss.read_index(str(index_path))
         self.metadata = pd.read_csv(metadata_path).fillna("")
 
         if self.index.ntotal != len(self.metadata):
@@ -42,12 +50,15 @@ class StandardsRetriever:
 
     def search(self, query: str, top_k: int = 5) -> list[dict]:
         """
-        Returns a list of up to top_k dicts, each with the standard's
-        metadata plus a similarity_score (0-1, higher = more relevant).
+        Returns up to top_k dicts with the standard's metadata, a
+        similarity_score (higher = more relevant) and a 'confident' flag
+        (True if the score is at or above min_score).
         """
         query = (query or "").strip()
         if not query:
             return []
+
+        top_k = max(1, min(int(top_k), self.index.ntotal))
 
         q_emb = self.model.encode([query], normalize_embeddings=True)
         q_emb = np.asarray(q_emb, dtype="float32")
@@ -63,6 +74,7 @@ class StandardsRetriever:
             if hasattr(year_val, "item"):
                 year_val = year_val.item()
 
+            score = float(score)
             results.append({
                 "standard_id": str(row["standard_id"]),
                 "title": str(row["title"]),
@@ -71,7 +83,8 @@ class StandardsRetriever:
                 "official_url": str(row["official_url"]),
                 "status": str(row["status"]),
                 "year": year_val,
-                "similarity_score": round(float(score), 4),
+                "similarity_score": round(score, 4),
+                "confident": score >= self.min_score,
             })
         return results
 
@@ -85,8 +98,13 @@ def main():
     if not results:
         print("No results.")
         return
+
+    if not results[0]["confident"]:
+        print(f"(No confident match - top score is below {retriever.min_score})\n")
+
     for i, r in enumerate(results, 1):
-        print(f"{i}. [{r['similarity_score']}] {r['standard_id']} - {r['title']}")
+        flag = "" if r["confident"] else "  [low confidence]"
+        print(f"{i}. [{r['similarity_score']}] {r['standard_id']} - {r['title']}{flag}")
         print(f"   Category: {r['category']} | Status: {r['status']} | Year: {r['year']}")
         print(f"   {r['official_url']}\n")
 
