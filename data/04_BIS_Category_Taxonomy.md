@@ -154,3 +154,30 @@ rather than describing a product themselves.
 quality control, statistical methods*
 
 Example standards from our dataset: IS 4905:2015, IS 2500 (Part 1):2000
+
+Categories added with Batch 2 (File 08)
+
+Batch 2 also added standards to all 12 categories above.
+
+**13. Solar & Renewable Energy** — PV modules, solar inverters, solar
+water heaters. Examples: IS 14286 (Part 1/Sec 1):2023, IS 16221 (Part
+2):2015
+
+**14. Fire Safety Equipment** — extinguishers, fire hoses, their
+selection/maintenance. Examples: IS 15683:2018, IS 2190:2024
+
+**15. Office Furniture & Stationery** — chairs, tables, storage units,
+beds, paper. Examples: IS 17631:2022, IS 1848 (Part 1):2018
+
+**16. Medical & Healthcare Supplies** — syringes, surgical masks,
+examination gloves, sanitary pads. Examples: IS 10258 (Part 1):2022, IS
+16289:2014
+
+**17. Textiles, Tarpaulins & Blankets** — Examples: IS 7903:2017, IS
+12848:2024
+
+**18. Automotive & Transport** — tyres, bicycles, EV charging. Examples:
+IS 15633:2022, IS 17017 (Part 1):2018
+
+**19. Management Systems & Accreditation** — ISO 9001/14001/45001, lab
+accreditation. Examples: IS/ISO 9001:2015, IS/ISO/IEC 17025:2017

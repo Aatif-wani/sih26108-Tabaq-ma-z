@@ -9,6 +9,8 @@ request). This means the server takes ~3-5 seconds to start, but every
 search request after that is fast.
 """
 
+import os
+
 from flask import Flask
 from flask_cors import CORS
 from routes.search import search_bp
@@ -45,7 +47,9 @@ if __name__ == "__main__":
     print("Loading AI model and FAISS index...")
     get_retriever()
     print("Retriever ready!")
-    print("Starting Flask server on http://localhost:5000")
+    # Port 5000 is taken by macOS AirPlay Receiver, so default to 5001.
+    port = int(os.environ.get("PORT", 5001))
+    print(f"Starting Flask server on http://localhost:{port}")
     print("=" * 50)
 
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)

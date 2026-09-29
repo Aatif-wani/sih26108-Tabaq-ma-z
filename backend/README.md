@@ -24,7 +24,7 @@ cd backend
 python app.py
 ```
 
-Server starts at **http://localhost:5000**
+Server starts at **http://localhost:5001**
 
 > The first startup takes ~3-5 seconds while the AI model and FAISS index load.
 > Every search after that is fast.
@@ -34,7 +34,7 @@ Server starts at **http://localhost:5000**
 ### `GET /health`
 
 ```
-GET http://localhost:5000/health
+GET http://localhost:5001/health
 ```
 
 Response `200`:
@@ -47,7 +47,7 @@ Response `200`:
 ### `POST /search`
 
 ```
-POST http://localhost:5000/search
+POST http://localhost:5001/search
 Content-Type: application/json
 
 {
@@ -105,7 +105,7 @@ backend/
 
 ## Notes for Dayan (frontend)
 
-- Base URL in dev: `http://localhost:5000`
+- Base URL in dev: `http://localhost:5001`
 - CORS is fully enabled — call from any port, no issues
 - Always include `Content-Type: application/json` header on POST
 - `top_k` defaults to 5 if you don't send it

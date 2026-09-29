@@ -9,10 +9,11 @@ Then in a second terminal run:
 """
 
 import json
+import os
 import urllib.request
 import urllib.error
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = f"http://localhost:{os.environ.get('PORT', 5001)}"
 
 
 def test_health():

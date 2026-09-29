@@ -13,4 +13,19 @@ quality sampling plan for incoming inspection,IS 2500 (Part 1):2000,hard,"generi
 random number generation for statistical sampling,IS 4905:2015,hard,"generic QC phrasing, overlaps with IS 2500"
 bottles for packaged mineral water,IS 15410:2003,hard,"paraphrase of ""containers for packaging"""
 motors and generators specification,IS 4722:2001,hard,"paraphrase - ""rotating electrical machines"" not named"
-smartphone battery safety standard,,hard,"expected: no confident match (not in this 22-row sample)"
+smartphone battery safety standard,IS 16046 (Part 2):2018,hard,"was a no-match case with 22 rows; lithium battery safety standard added in batch 2"
+sand and gravel for making concrete,IS 383:2016,easy,batch 2 - exact-topic match
+MCB for house wiring,IS/IEC 60898-1:2015,medium,batch 2 - abbreviation (MCB)
+solar panels for rooftop project,IS 14286 (Part 1/Sec 1):2023,medium,batch 2 - paraphrase of PV module
+ISI helmet for bike riders,IS 4151:2015,medium,batch 2 - paraphrase
+fire extinguishers for office building,IS 15683:2018,easy,batch 2 - exact-topic match
+revolving chairs for government office,IS 17631:2022,medium,"batch 2 - paraphrase of ""work chairs"""
+disposable syringes for hospital,IS 10258 (Part 1):2022,easy,batch 2 - exact-topic match
+N95 dust mask for workers,IS 9473:2002,medium,batch 2 - brand-style term (N95)
+bags for storing 50 kg wheat,IS 14887:2014,medium,batch 2 - paraphrase of HDPE woven sacks
+split AC for classrooms,IS 1391 (Part 2):2023,easy,batch 2 - exact-topic match
+earthquake resistant building design,IS 1893 (Part 1):2016,medium,batch 2 - IS 13920 is a close neighbour
+XLPE armoured cable 1.1 kV,IS 7098 (Part 1):2025,medium,batch 2 - IS 1554 is a close neighbour
+fortified rice for mid day meal scheme,IS 17780:2021,easy,batch 2 - exact-topic match
+ISO 9001 certified supplier,IS/ISO 9001:2015,easy,batch 2 - management system
+yoga mats and gym equipment,,hard,"expected: no confident match (not in the 136-row dataset)"

@@ -56,7 +56,19 @@ last mile from here.
 
 ## Current dataset size
 
-22 sample standards (from Ilha + Basit's first batch). Good enough to prove
-the pipeline works end-to-end; ask them for the fuller batch once Track 1
-grows past this sample, then just re-run steps 1–2 above — nothing else
+136 standards across 19 categories:
+
+- **Batch 1 (rows 1–22):** Ilha + Basit's hand-collected sample.
+- **Batch 2 (rows 23–136):** 114 commonly procured standards (cement, bricks,
+  cables, MCBs, appliances, LED street lights, solar, PPE, office furniture,
+  medical consumables, fire safety, food grain packaging, ISO management
+  systems, ...). Each one's current, non-withdrawn edition was confirmed on
+  the BIS Standards Portal (standards.bis.gov.in) and `official_url` links to
+  that standard's official details page. Title, IS number, edition year and
+  committee come from BIS; `scope` and `keywords` are team-written paraphrases
+  (no BIS text copied, per `data/03_BIS_Copyright_and_Data_Use_Note.md`).
+  Full master-format records are in `data/08_BIS_Standards_Expansion_Batch2.csv`.
+
+To add more standards, look them up with `data/fetch_bis_standards.py`, append
+rows to `standards_dataset.csv`, then re-run steps 1–2 above. Nothing else
 needs to change.
