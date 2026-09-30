@@ -1,82 +1,54 @@
-# AI Recommendation Engine for Indian Standards in Procurement
+# Tabaq Ma:z — Semantic Search for Indian Standards
 
-**SIH 2026 | Problem ID: SIH26108 | Ministry of Consumer Affairs**
+**SIH26108 · Team Tabaq Ma:z**
 
-## What this project does
+> Describe what you're buying in plain words. Get the right Indian Standards, ranked, with current status, edition year and a link to the official BIS page.
 
-You type in a procurement need (e.g. "cement for building construction") and
-the system recommends the most relevant Indian Standards (IS numbers), ranked
-by how well they match — using AI-based semantic search, not just keyword
-matching.
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![Flask](https://img.shields.io/badge/API-Flask-lightgrey)
+![FAISS](https://img.shields.io/badge/Vector%20Search-FAISS-green)
+![Model](https://img.shields.io/badge/Embeddings-all--MiniLM--L6--v2-orange)
+![Status](https://img.shields.io/badge/Status-Working%20Prototype-brightgreen)
 
-This is a **search / recommendation tool**, not a chatbot.
+---
 
-## How it works (simple version)
+## The Problem
 
-```
-Data (BIS standards)  →  AI Engine (embeddings + FAISS)  →  Backend (Flask API)  →  Frontend (website)
-      Ilha + Basit              Babar (+ Aatif)                  Muhaimin                Dayan
-```
+Somewhere in a district office, an engineer is writing a tender for 2,000 office chairs. The specification needs an Indian Standard. She searches online, finds an old PDF, a 2017 circular and a forum thread, and copies the IS number that looks right. Sometimes it is right. Sometimes it's an edition BIS replaced years ago, and nobody notices until a supplier disputes the order.
 
-You type a query on the website → it goes to the Flask backend → the backend
-asks the AI engine for the closest-matching standards → results come back
-ranked, with an IS number, title, category, and a similarity score.
+This is a **language gap**. BIS publishes around **23,890 standards**, and their titles are written for engineers ("Work Chairs - Specification"). Tenders are written the way people talk ("revolving chairs for government office"). Keyword search can't bridge the two, so references go missing, go stale or go wrong. The result: poor-quality supplies, disputes and re-tendering.
 
-## Folder structure
+## The Solution
 
-| Folder | Owner | What's in it |
+A semantic recommendation engine that matches **meaning, not spelling**.
+
+| Query | Top result | Why keyword search fails |
 |---|---|---|
-| `data/` | Ilha + Basit | Collected standards data, BIS research, legal/copyright notes |
-| `ai-engine/` | Babar (built so far by Aatif while Babar was busy) | Embedding + FAISS search engine — see its own README inside |
-| `backend/` | Muhaimin | Flask app and API routes, built around `ai-engine`'s retriever |
-| `frontend/` | Dayan | The website / search interface, connects to the backend API |
+| `Safety shoes for factory workers` | IS 15298 (Part 2):2024 | The title says "Safety **Footwear**", not shoes |
+| `Code of practice for RCC structural design` | IS 456:2000 | "RCC" is only an abbreviation |
 
-Each folder has (or will have) its own README with setup instructions specific
-to that part. This file is just the map.
+Each result includes: IS number · title · category · status · edition year · similarity score · link to the official BIS page.
 
-## Team
+## What Makes It Different
 
-| Person | Job |
-|---|---|
-| Ilha + Basit | Collect Indian Standards data, research BIS rules on what's legally usable |
-| Babar | Build the AI search engine (embeddings + FAISS) |
-| Muhaimin | Build the Flask backend and APIs |
-| Dayan | Build the frontend website, stay in close contact with Muhaimin |
-| Aatif | Connect everything, test it, run the SIH demo |
+- **It knows when to say "I don't know."** If even the best match scores below **0.40** cosine similarity, the UI shows *"No confident match"* instead of a shaky list. In procurement, a confident wrong answer is worse than none.
+- **It cannot invent a standard.** There is no generative model. Every result is a real row from a verified catalogue, with a link back to BIS.
+- **It speaks procurement, not BIS.** Tested on how officials actually type: abbreviations (MCB, N95, XLPE, RCC), everyday phrasing ("bags for storing 50 kg wheat", "ISI helmet for bike riders") and scheme language ("fortified rice for mid day meal scheme").
+- **It respects the source.** Every edition was checked on the official BIS Standards Portal. Scopes and keywords are written by our team in our own words. We store **only metadata**, never the text of a standard.
+- **It runs anywhere.** Open-source model, CPU-only, no paid APIs, no cloud vector database.
 
-## Getting started (for any teammate)
+## How It Works
 
-```bash
-git clone https://github.com/Aatif-wani/sih26108-Tabaq-ma-z.git
-cd sih26108-Tabaq-ma-z
-```
+```text
+                 OFFLINE (once)
+ ┌──────────────┐   ┌─────────────────┐   ┌────────────────┐   ┌──────────────┐
+ │ Standards    │ → │ title + scope + │ → │ all-MiniLM-L6  │ → │ FAISS        │
+ │ metadata CSV │   │ keywords + cat. │   │ 384-d vectors  │   │ IndexFlatIP  │
+ └──────────────┘   └─────────────────┘   └────────────────┘   └──────────────┘
 
-Then go into your own track's folder and follow the README there. For
-example, to run the AI engine:
-
-```bash
-cd ai-engine
-python -m venv venv
-venv\Scripts\activate        # Windows
-pip install -r requirements.txt
-python build_embeddings.py
-python build_index.py
-python retrieve.py "your query here"
-```
-
-## Ground rules
-
-- **Talk before you merge** — if you're changing something another track
-  depends on (like the API response format), message the team first.
-- **Small, frequent commits** beat one giant commit at the end.
-- **Pull before you start working** each day: `git pull`.
-- Only add data to `data/` that Ilha + Basit have confirmed is legally safe
-  to use — see their legal note before reusing anything from BIS.
-
-## Status
-
-- ✅ Data collection — sample batch done (Ilha + Basit)
-- ✅ AI engine — working prototype, tested locally (Babar / Aatif)
-- ✅ Backend — Flask API completed and verified (Muhaimin)
-- ⬜ Frontend — not started (Dayan)
-- ⬜ Full integration + demo — not started
+                 ONLINE (per query)
+ ┌──────────┐  POST /search  ┌───────────┐  embed  ┌───────────┐  top-k  ┌─────────┐
+ │ Web page │ ─────────────→ │ Flask API │ ──────→ │ Retriever │ ──────→ │ Results │
+ └──────────┘                └───────────┘         └───────────┘         └─────────┘
+                                                        │
+                                          best score < 0.40 → "No confident match"
